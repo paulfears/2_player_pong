@@ -40,6 +40,10 @@ io.on('connection', (socket)=>{
     }
     else{
       let opponent = unmatched_players.shift() //pops player out of queue
+      if(opponent.id === person.id){
+        unmatched_players.push(person)
+        return;
+      }
       person.x = 450;
       person.opponent = opponent.id;
       opponent.opponent = person.id;
@@ -63,6 +67,13 @@ io.on('connection', (socket)=>{
       io.sockets.to(pair[0].id).emit("update", pair);
       io.sockets.to(pair[1].id).emit("update", pair);
     }
+
+    socket.on('disconnect', function(){
+      if(unmatched_players.indexOf(person) != -1){
+        console.log("here")
+        unmatched_players.splice(unmatched_players.indexOf(person), 1)
+      }
+    });
 
     socket.on('moveUp', function(){
       if(matches[socket.id]){
