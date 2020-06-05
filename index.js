@@ -47,7 +47,7 @@ let unmatched_players = []
 let matches = {}
 io.on('connection', (socket)=>{
     console.log("connection")
-    let person = new Player(10, 10, socket.id)
+    let person = new Player(50, 10, socket.id)
     players[socket.id] = person;
     let pair = []
     
@@ -182,6 +182,12 @@ io.on('connection', (socket)=>{
     socket.on('moveDown', function(){
       if(matches[socket.id]){
         matches[socket.id].person.y -= 8;
+      }
+    })
+
+    socket.on('setY', function(yValue){
+      if(matches[socket.id]){
+        matches[socket.id].person.y = yValue;
       }
     })
 

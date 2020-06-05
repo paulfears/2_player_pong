@@ -3,6 +3,13 @@ const socket = io();
 let canvas = document.getElementById("playarea");
 let ctx = canvas.getContext('2d');
 
+
+
+document.addEventListener("touchmove", function(event){
+  event.preventDefault();
+  socket.emit("setY", event.touches[0].pageY)
+}, {passive: false})
+
 document.addEventListener("keydown", function(event){
   if(event.key === 	"ArrowDown"){
     console.log("downArrow pressed")
