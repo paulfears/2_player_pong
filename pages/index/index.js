@@ -16,16 +16,44 @@ document.addEventListener("keydown", function(event){
 })
 
 
-socket.on('update', function(players){
+socket.on('update', function(items){
   ctx.clearRect(0,0,500,500)
-  for(player of Object.values(players)){
-    ctx.fillText(player.id, player.x-10, 15)
-    ctx.fillRect(player.x, player.y, 20, 40)
+  for(item of Object.values(items)){
+    if(item.type === 'player'){
+      ctx.fillText(item.id, item.x-10, 15)
+      ctx.fillRect(item.x, item.y, 20, 40)
+    }
+    if(item.type === 'ball'){
+      ctx.beginPath();
+      console.log(item)
+      ctx.arc(item.x, item.y, 10, 0, 3.1415*2)
+      ctx.fill();
+    }
   }
+})
+document.getElementById("queueDialog").style.display = "block";
+socket.on('added_to_queue', function(){
+  console.log("added to queue");
+})
+
+socket.on('exit_queue', function(){
+  document.getElementById("queueDialog").style.display = "none";
+  readyMenu = document.getElementById("readyMenu")
+  console.log(readyMenu)
+  readyMenu.style.display = "block";
+  document.getElementById("readyButton").addEventListener('click', function(){
+    
+    socket.emit("ready")
+  })
+})
+
+socket.on('opponent-ready', function(){
+  document.getElementById("opponentReadyAlert").style.display = "block";
 })
 
 
 socket.on('startgame', function(player){
+  document.getElementById("readyMenu").style.display = "none";
   console.log("here")
   console.log(player)
   console.log(ctx)
