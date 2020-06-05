@@ -17,11 +17,12 @@ document.addEventListener("keydown", function(event){
 
 
 socket.on('update', function(items){
-  ctx.clearRect(0,0,500,500)
+  ctx.clearRect(0,0,450,500)
+  ctx.clearRect(550, 0, 450, 500)
   for(item of Object.values(items)){
     if(item.type === 'player'){
       ctx.fillText(item.id, item.x-10, 15)
-      ctx.fillRect(item.x, item.y, 20, 40)
+      ctx.fillRect(item.x, item.y, item.width, item.height)
     }
     if(item.type === 'ball'){
       ctx.beginPath();

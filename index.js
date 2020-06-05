@@ -16,6 +16,8 @@ class Player{
     constructor(x,y, socketid){
         this.x = x;
         this.y = y;
+        this.height = 80;
+        this.width = 10;
         this.id = socketid;
         this.ready = false;
         this.type = "player";
@@ -61,14 +63,14 @@ io.on('connection', (socket)=>{
       }
       io.to(opponent.id).emit("exit_queue")
       io.to(person.id).emit("exit_queue")
-      person.x = 450;
+      person.x = 950;
       person.side = "right";
       opponent.side = "left";
       person.opponent = opponent.id;
       opponent.opponent = person.id;
       let ball = new Ball(250, 250, 1+Math.random(), 1+Math.random())
-      matches[person.id] = {"person":person, "opponent":opponent, "ball":ball };
-      matches[opponent.id] = {"person":opponent, "opponent":person, "ball":ball };
+      matches[person.id] = {"person":person, "opponent":opponent, "ball":ball, "disconnected":false };
+      matches[opponent.id] = {"person":opponent, "opponent":person, "ball":ball, "disconnected":false };
       console.log("person id is "+person.id)
       
     }
@@ -87,12 +89,28 @@ io.on('connection', (socket)=>{
     function startGame(id){
       let match = matches[socket.id]
       console.log(socket.id)
-      console.log(matches)
 
       io.to(match.person.id).emit("startgame", match);
       io.to(match.opponent.id).emit("startgame", match);
-      setInterval(runGame, 1000/60)
+      runGame()
     }
+
+    function freshCollision(person, ball){
+      if(ball.y >= person.y && ball.y <= person.y+person.height){
+        if(person.side === "left"){
+          if(ball.x <= person.x+person.width && ball.dx < 0){
+            return true;
+          }
+        }
+        if(person.side === "right"){
+          if(ball.x >= person.x && ball.dx > 0){
+            return true
+          }
+        }
+      }
+      return false;
+    }
+
     function runGame(){
       let match = matches[socket.id]
       if(match.ball.y < 0){
@@ -105,22 +123,42 @@ io.on('connection', (socket)=>{
           match.ball.dy *= -1;
         }
       }
-      if(match.ball.y >= match.person.y && match.ball.y <= match.person.y+40){
-        if(person.side == "left"){
-          if(match.ball.x < match.person.x && match.ball.dx < 0){
-            match.ball.dx *=-1
-          }
+      if(freshCollision(match.person, match.ball)){
+        match.ball.dx *= -1;
+        if(match.ball.dx < 0){
+          match.ball.dx -= Math.random();
+        }
+        else{
+          match.ball.dx += Math.random();
         }
       }
-      if(match.ball.y >= match.opponent.y && match.ball.y <= match.opponent.y+40){
-        if(match.ball.x > match.opponent.x && match.ball.dx > 0){
-          match.ball.dx *=-1
+      if(freshCollision(match.opponent, match.ball)){
+        match.ball.dx *= -1;
+        if(match.ball.dx < 0){
+          match.ball.dx -= Math.random();
+        }
+        else{
+          match.ball.dx += Math.random();
+        }
+      }
+      
+      if(match.ball.x < 0){
+        if(match.ball.dx < 0){
+          match.ball.dx *= -1;
+        }
+      }
+      if(match.ball.x > 1000){
+        if(match.ball.dx > 0){
+          match.ball.dx *= -1;
         }
       }
       match.ball.x += match.ball.dx;
       match.ball.y += match.ball.dy;
       io.sockets.to(match.person.id).emit("update", match);
       io.sockets.to(match.opponent.id).emit("update", match);
+      if(!match.disconnected){
+        setTimeout(runGame, 1000/60);
+      }
     }
 
 
