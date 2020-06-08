@@ -45,8 +45,10 @@ class Ball{
 let players = {};
 let unmatched_players = []
 let matches = {}
+
 function handleMatchMaking(player){
   if(unmatched_players.length == 0){
+    player.x = 10;
     io.to(player.id).emit("added_to_queue")
     unmatched_players.push(player)
   }
@@ -63,7 +65,7 @@ function handleMatchMaking(player){
     opponent.side = "left"
     player.opponent = opponent.id;
     opponent.opponent = player.id;
-    let ball = new Ball(500, 250, 1+Math.random()*5, 1+Math.random()*5)
+    let ball = new Ball(500, 250, 1+Math.random(), 1+Math.random())
     matches[player.id] = {"person":player, "opponent":opponent, "ball":ball, "disconnected":false };
     matches[opponent.id] = {"person":opponent, "opponent":player, "ball":ball, "disconnected":false };
     console.log("person id is "+player.id)
@@ -115,6 +117,9 @@ io.on('connection', (socket)=>{
 
     function runGame(){
       let match = matches[socket.id]
+      if(!match){
+        return;
+      }
       if(match.ball.y < 0){
         if(match.ball.dy < 0){
           match.ball.dy *= -1;

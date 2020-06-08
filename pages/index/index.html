@@ -6,12 +6,16 @@
     <body>
         <h1>hello world</h1>
         <div id="queueDialog" class="modal">
-          <p class="modalContent">waiting for other player</p>
+          <h1 class="modalContent">waiting for other player</h1>
           <div class="loader modalContent"></div>
         </div>
         <div id="readyMenu" class="modal">
-          <p class="modalContent">waiting to get ready</p>
-          <p style="display:none" id="opponentReadyAlert" class="modalContent">Opponent Ready</p>
+          <h1 class="modalContent">waiting to get ready</h1>
+          <h1 style="display:none" id="opponentReadyAlert" class="modalContent">Opponent Ready</h1>
+          <div style="display:none" id="waitingOnOtherPlayer">
+            <h1 class="modalContent">Waiting on other player to ready up</h1>
+            <div class="loader"></div>
+          </div>
           <div class="modalContent" ><button id="readyButton">ready</button></div>
         </div>
         <center><canvas width="1000" height="500" id="playarea"></canvas></center>

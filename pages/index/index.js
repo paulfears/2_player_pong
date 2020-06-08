@@ -50,7 +50,7 @@ socket.on('exit_queue', function(){
   console.log(readyMenu)
   readyMenu.style.display = "block";
   document.getElementById("readyButton").addEventListener('click', function(){
-    
+    document.getElementById("waitingOnOtherPlayer").style.display = "block";
     socket.emit("ready")
   })
 })
@@ -62,6 +62,7 @@ socket.on('opponent-ready', function(){
 
 socket.on('startgame', function(player){
   document.getElementById("readyMenu").style.display = "none";
+  document.getElementById("waitingOnOtherPlayer").style.display = "none"
   console.log("here")
   console.log(player)
   console.log(ctx)
