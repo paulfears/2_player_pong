@@ -45,35 +45,37 @@ class Ball{
 let players = {};
 let unmatched_players = []
 let matches = {}
+function handleMatchMaking(player){
+  if(unmatched_players.length == 0){
+    io.to(player.id).emit("added_to_queue")
+    unmatched_players.push(player)
+  }
+  else{
+    let opponent = unmatched_players.shift()
+    if(opponent.id === player.id){
+      unmatched_players.push(player)
+      return;
+    }
+    io.to(opponent.id).emit("exit_queue")
+    io.to(player.id).emit("exit_queue")
+    player.x = 950
+    player.side = "right"
+    opponent.side = "left"
+    player.opponent = opponent.id;
+    opponent.opponent = player.id;
+    let ball = new Ball(500, 250, 1+Math.random()*5, 1+Math.random()*5)
+    matches[player.id] = {"person":player, "opponent":opponent, "ball":ball, "disconnected":false };
+    matches[opponent.id] = {"person":opponent, "opponent":player, "ball":ball, "disconnected":false };
+    console.log("person id is "+player.id)
+  }
+  
+}
+
 io.on('connection', (socket)=>{
     console.log("connection")
     let person = new Player(50, 10, socket.id)
-    players[socket.id] = person;
-    let pair = []
     
-    if(unmatched_players.length == 0){
-      io.to(person.id).emit("added_to_queue")
-      unmatched_players.push(person);
-    }
-    else{
-      let opponent = unmatched_players.shift() //pops player out of queue
-      if(opponent.id === person.id){
-        unmatched_players.push(person)
-        return;
-      }
-      io.to(opponent.id).emit("exit_queue")
-      io.to(person.id).emit("exit_queue")
-      person.x = 950;
-      person.side = "right";
-      opponent.side = "left";
-      person.opponent = opponent.id;
-      opponent.opponent = person.id;
-      let ball = new Ball(250, 250, 1+Math.random(), 1+Math.random())
-      matches[person.id] = {"person":person, "opponent":opponent, "ball":ball, "disconnected":false };
-      matches[opponent.id] = {"person":opponent, "opponent":person, "ball":ball, "disconnected":false };
-      console.log("person id is "+person.id)
-      
-    }
+    handleMatchMaking(person)
 
     function everybodyReady(){
       let match = matches[person.id]
@@ -159,6 +161,10 @@ io.on('connection', (socket)=>{
       if(!match.disconnected){
         setTimeout(runGame, 1000/60);
       }
+      else{
+        delete matches[match.person.id]
+        delete matches[match.opponent.id]
+      }
     }
 
 
@@ -166,6 +172,13 @@ io.on('connection', (socket)=>{
       if(unmatched_players.indexOf(person) != -1){
         console.log("here")
         unmatched_players.splice(unmatched_players.indexOf(person), 1)
+      }
+      if(matches.hasOwnProperty(person.id)){
+        let match = matches[person.id]
+        match.disconnected = true;
+        io.sockets.to(match.opponent.id).emit("opponentDisconnected");
+        handleMatchMaking(match.opponent)
+
       }
     });
 

@@ -39,9 +39,9 @@ socket.on('update', function(items){
     }
   }
 })
-document.getElementById("queueDialog").style.display = "block";
+
 socket.on('added_to_queue', function(){
-  console.log("added to queue");
+  document.getElementById("queueDialog").style.display = "block";
 })
 
 socket.on('exit_queue', function(){
@@ -66,4 +66,8 @@ socket.on('startgame', function(player){
   console.log(player)
   console.log(ctx)
   ctx.fillText(player.x, player.y, 20, 40);
+})
+
+socket.on('opponentDisconnected', function(){
+  alert("opponent disconnected")
 })
