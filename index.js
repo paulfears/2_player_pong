@@ -45,10 +45,11 @@ class Ball{
 let players = {};
 let unmatched_players = []
 let matches = {}
+let scored = false
 
 function handleMatchMaking(player){
   if(unmatched_players.length == 0){
-    player.x = 10;
+    player.x = 50;
     io.to(player.id).emit("added_to_queue")
     unmatched_players.push(player)
   }
@@ -66,12 +67,14 @@ function handleMatchMaking(player){
     player.opponent = opponent.id;
     opponent.opponent = player.id;
     let ball = new Ball(500, 250, 1+Math.random(), 1+Math.random())
-    matches[player.id] = {"person":player, "opponent":opponent, "ball":ball, "disconnected":false };
-    matches[opponent.id] = {"person":opponent, "opponent":player, "ball":ball, "disconnected":false };
+    matches[player.id] = {"person":player, "opponent":opponent, "ball":ball, "disconnected":false, "score":[0,0]};
+    matches[opponent.id] = {"person":opponent, "opponent":player, "ball":ball, "disconnected":false, "score":[0,0]};
     console.log("person id is "+player.id)
   }
   
 }
+
+
 
 io.on('connection', (socket)=>{
     console.log("connection")
@@ -122,11 +125,13 @@ io.on('connection', (socket)=>{
       }
       if(match.ball.y < 0){
         if(match.ball.dy < 0){
+          match.ball.dy -= Math.random()*0.5
           match.ball.dy *= -1;
         }
       }
       if(match.ball.y > 500){
         if(match.ball.dy > 0){
+          match.ball.dy += Math.random()*0.5
           match.ball.dy *= -1;
         }
       }
@@ -149,27 +154,51 @@ io.on('connection', (socket)=>{
         }
       }
       
-      if(match.ball.x < 0){
-        if(match.ball.dx < 0){
-          match.ball.dx *= -1;
-        }
+      if(match.ball.x < -5){
+        
+        score(match.person)
+        
       }
-      if(match.ball.x > 1000){
-        if(match.ball.dx > 0){
-          match.ball.dx *= -1;
-        }
+      if(match.ball.x > 1005){
+        score(match.opponent)
       }
       match.ball.x += match.ball.dx;
       match.ball.y += match.ball.dy;
       io.sockets.to(match.person.id).emit("update", match);
       io.sockets.to(match.opponent.id).emit("update", match);
       if(!match.disconnected){
-        setTimeout(runGame, 1000/60);
+        if(!scored){
+          setTimeout(runGame, 1000/45);
+        }
       }
       else{
         delete matches[match.person.id]
         delete matches[match.opponent.id]
       }
+    }
+
+    function score(scorer){
+      scored = true;
+      matches[scorer.id].score[0] += 1;
+      let opponent_id = matches[scorer.id].opponent.id
+      matches[opponent_id].score[1] += 1;
+      let ball = new Ball(500, 250, 1+Math.random(), 1+Math.random())
+      matches[scorer.id].ball = ball;
+      matches[opponent_id].ball = ball;
+      function restart(){
+        scored = false;
+        runGame();
+      }
+      if(scorer.side === "left"){
+        io.to(scorer.id).emit("scoredLeft");
+        io.to(opponent_id).emit("scoredLeft")
+      }
+      else{
+        io.to(scorer.id).emit("scoredRight");
+        io.to(opponent_id).emit("scoredRight");
+      }
+      setTimeout(restart, 2000);
+      
     }
 
 

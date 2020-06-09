@@ -7,6 +7,7 @@ body{
 
 canvas{
   border: 1px solid white;
+  cursor: none;
 }
 
 .modal {
@@ -62,4 +63,15 @@ button{
   100% { transform: rotate(360deg); }
 }
 
-canvas{width: 80%}
+
+@media only screen and (min-width: 800px){
+  canvas{width: 80%}
+}
+
+@media only screen and (max-width: 801px){
+  canvas{
+    height: 70vh;
+    width: auto;
+  }
+
+}

@@ -3,12 +3,17 @@ const socket = io();
 let canvas = document.getElementById("playarea");
 let ctx = canvas.getContext('2d');
 
-
+let leftScore = 0;
+let rightScore = 0;
 
 document.addEventListener("touchmove", function(event){
   event.preventDefault();
   socket.emit("setY", event.touches[0].pageY)
 }, {passive: false})
+
+document.addEventListener("mousemove", function(event){
+  socket.emit("setY", event.clientY)
+})
 
 document.addEventListener("keydown", function(event){
   if(event.key === 	"ArrowDown"){
@@ -40,7 +45,6 @@ socket.on('update', function(items){
     }
     if(item.type === 'ball'){
       ctx.beginPath();
-      console.log(item)
       ctx.arc(item.x, item.y, 10, 0, 3.1415*2)
       ctx.fill();
     }
@@ -81,4 +85,16 @@ socket.on('startgame', function(player){
 
 socket.on('opponentDisconnected', function(){
   alert("opponent disconnected")
+})
+
+socket.on('scoredLeft', function(){
+  console.log("here")
+  leftScore += 1;
+  document.getElementById('leftScore').innerHTML = leftScore;
+})
+
+socket.on('scoredRight', function(){
+  console.log("here")
+  rightScore += 1;
+  document.getElementById('rightScore').innerHTML = rightScore;
 })
