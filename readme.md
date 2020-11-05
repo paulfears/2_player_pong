@@ -4,5 +4,5 @@
 
 
 ## its almost fun
-try it here
+try it here (it even works on mobile)
 [https://2playerpong.paulfears.repl.co](https://2playerpong.paulfears.repl.co)
