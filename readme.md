@@ -1,4 +1,4 @@
-#2 player pong is a pong game that utilizes web sockets to allow online multiplayer and match making
+# 2 player pong is a pong game that utilizes web sockets to allow online multiplayer and match making
 ## its almost fun
 
 try it here
